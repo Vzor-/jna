@@ -245,7 +245,8 @@ LDFLAGS=/DLL /OUT:$@
 LIBS=psapi.lib
 ARSFX=.lib
 ifeq ($(ARCH),amd64)
-CC+= -m64
+#fixme!!!!
+CC+= -marm64
 endif
 FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/x86/ffitarget.h include
 FFI_ENV+=LD="$(LD)" CPP="$(CPP)" CXXCPP="$(CPP)"
