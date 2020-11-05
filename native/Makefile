@@ -59,9 +59,12 @@ JAVA_INCLUDES=-I"$(JAVA_HOME)/include" \
 BUILD=../build/native
 JAVAH=$(BUILD)
 INSTALLDIR=../build/$(OS)
-JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(BUILD)/callback.o $(EXTRAOBJS)
+##fixme!!
+JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(EXTRAOBJS)
+#JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(BUILD)/callback.o $(EXTRAOBJS)
 RSRC=$(BUILD)/rsrc.o
 DLLCB=$(BUILD)/dll-callback.o
+FAUXCB=$(BUILD)/callback.o
 ifneq ($(DYNAMIC_LIBFFI),true)
 FFI_SRC=$(shell pwd)/libffi
 FFI_BUILD=$(BUILD)/libffi
@@ -228,7 +231,9 @@ FFI_CONFIG+=--host=i686-w64-mingw32
 MINGW_PREFIX?=i686-w64-mingw32-
 endif
 # Need windres from mingw distribution, even if building with MSVC
-WINDRES=$(MINGW_PREFIX)windres
+#### disable windres for arm64
+#WINDRES=$(MINGW_PREFIX)windres
+WINDRES=false
 MINGW=$(MINGW_PREFIX)gcc
 
 ifeq ($(USE_MSVC),true)
@@ -246,11 +251,16 @@ LIBS=psapi.lib
 ARSFX=.lib
 ifeq ($(ARCH),amd64)
 #fixme!!!!
+#CC+= =m64
 CC+= -marm64
 endif
-FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/x86/ffitarget.h include
+#fixme!!!!
+FFI_CONFIG+=--host=aarch64-cygwin
+#FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/x86/ffitarget.h include
+FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/aarch64/ffitarget.h include
 FFI_ENV+=LD="$(LD)" CPP="$(CPP)" CXXCPP="$(CPP)"
-EXTRAOBJS+=$(DLLCB)
+#fixme!!
+EXTRAOBJS+=$(FAUXCB)
 
 else
 # Mingw compiler
@@ -450,9 +460,13 @@ install:
 	mkdir $(INSTALLDIR)
 	cp $(LIBRARY) $(INSTALLDIR)
 
+# fixme!!
 ifeq ($(ARCH), amd64)
 $(DLLCB): dll-callback.c 
 	$(MINGW) -DDEFINE_CALLBACKS -c $< $(COUT)
+$(FAUXCB): callback.c
+    # TODO: Fix: Lazily and incorrectly set WINCE flag to avoid dll-callback support
+	$(CC) -DDEFINE_CALLBACKS -D_WIN32_WCE $(CINCLUDES) -c $< $(COUT)
 endif
 
 $(RSRC): $(BUILD)/jnidispatch.rc $(BUILD)/$(JNA_JNI_VERSION).stamp
