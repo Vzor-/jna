@@ -59,12 +59,9 @@ JAVA_INCLUDES=-I"$(JAVA_HOME)/include" \
 BUILD=../build/native
 JAVAH=$(BUILD)
 INSTALLDIR=../build/$(OS)
-##fixme!!
-JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(EXTRAOBJS)
-#JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(BUILD)/callback.o $(EXTRAOBJS)
+JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(BUILD)/callback.o $(EXTRAOBJS)
 RSRC=$(BUILD)/rsrc.o
 DLLCB=$(BUILD)/dll-callback.o
-FAUXCB=$(BUILD)/callback.o
 ifneq ($(DYNAMIC_LIBFFI),true)
 FFI_SRC=$(shell pwd)/libffi
 FFI_BUILD=$(BUILD)/libffi
@@ -231,12 +228,16 @@ FFI_CONFIG+=--host=i686-w64-mingw32
 MINGW_PREFIX?=i686-w64-mingw32-
 endif
 # Need windres from mingw distribution, even if building with MSVC
-#### disable windres for arm64
-#WINDRES=$(MINGW_PREFIX)windres
-WINDRES=false
+WINDRES=$(MINGW_PREFIX)windres
 MINGW=$(MINGW_PREFIX)gcc
 
 ifeq ($(USE_MSVC),true)
+ifeq ($(ARCH),aarch64)
+# Force $(CC) fallback; avoid arch mismatch
+WINDRES=false
+# Disable mingw; no aarch64 support
+MINGW=
+endif
 # MS compiler
 CC=$(FFI_SRC)/msvcc.sh
 CDEFINES+=-DHAVE_PROTECTION 
@@ -250,17 +251,18 @@ LDFLAGS=/DLL /OUT:$@
 LIBS=psapi.lib
 ARSFX=.lib
 ifeq ($(ARCH),amd64)
-#fixme!!!!
-#CC+= =m64
+CC+= -m64
+FFI_TARGET=$(FFI_SRC)/src/x86/ffitarget.h
+else ifeq ($(ARCH),aarch64)
 CC+= -marm64
-endif
-#fixme!!!!
 FFI_CONFIG+=--host=aarch64-cygwin
-#FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/x86/ffitarget.h include
-FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_SRC)/src/aarch64/ffitarget.h include
+# Disable ASMFN for aarch64, don't bulid dll-callback.o
+DLLCB=$(BUILD)/callback.o
+endif
+FFI_TARGET?=$(FFI_SRC)/src/$(ARCH)/ffitarget.h
+FFI_CONFIG+= && rm -f include/ffitarget.h && cp $(FFI_SRC)/include/*.h $(FFI_TARGET) include
 FFI_ENV+=LD="$(LD)" CPP="$(CPP)" CXXCPP="$(CPP)"
-#fixme!!
-EXTRAOBJS+=$(FAUXCB)
+EXTRAOBJS+=$(DLLCB)
 
 else
 # Mingw compiler
@@ -460,13 +462,13 @@ install:
 	mkdir $(INSTALLDIR)
 	cp $(LIBRARY) $(INSTALLDIR)
 
-# fixme!!
 ifeq ($(ARCH), amd64)
 $(DLLCB): dll-callback.c 
 	$(MINGW) -DDEFINE_CALLBACKS -c $< $(COUT)
-$(FAUXCB): callback.c
-    # TODO: Fix: Lazily and incorrectly set WINCE flag to avoid dll-callback support
-	$(CC) -DDEFINE_CALLBACKS -D_WIN32_WCE $(CINCLUDES) -c $< $(COUT)
+else ifeq ($(ARCH), aarch64)
+# Build without ASMFN support
+$(DLLCB): callback.c
+	$(CC) -DDEFINE_CALLBACKS -DASMFN_OFF $(CINCLUDES) -c $< $(COUT)
 endif
 
 $(RSRC): $(BUILD)/jnidispatch.rc $(BUILD)/$(JNA_JNI_VERSION).stamp
