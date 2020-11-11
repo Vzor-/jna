@@ -468,7 +468,7 @@ $(DLLCB): dll-callback.c
 else ifeq ($(ARCH), aarch64)
 # Build without ASMFN support
 $(DLLCB): callback.c
-	$(CC) -DDEFINE_CALLBACKS -DASMFN_OFF $(CINCLUDES) -c $< $(COUT)
+	$(CC) -DDEFINE_CALLBACKS -DASMFN_OFF $(CINCLUDES) $(CDEFINES) -c $< $(COUT)
 endif
 
 $(RSRC): $(BUILD)/jnidispatch.rc $(BUILD)/$(JNA_JNI_VERSION).stamp
