@@ -21,7 +21,7 @@ environment:
       JAVA_HOME: '%ProgramFiles(x86)%\Java\jdk1.8.0' # 32-bit
 
     - TARGET_ARCH: aarch64
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 # includes cygwin, mingw`
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 # includes cygwin, mingw
       CYGWIN_PACKAGES: make,automake,libtool
       CHOCO_PACKAGES: ant
       CYGWIN_SETUP: setup-x86_64.exe # varies from choco
