@@ -276,7 +276,6 @@
     <condition property="os.prefix" value="win32-${jre.arch}">
       <equals arg1="${build.os.family}" arg2="windows"/>
     </condition>
-    <!-- Darwin builds are universal, no arch required -->
     <condition property="os.prefix" value="darwin">
       <equals arg1="${build.os.family}" arg2="mac"/>
     </condition>
@@ -521,7 +520,7 @@ com/sun/jna/openbsd-x86-64/libjnidispatch.so;
 processor=x86-64;osname=openbsd,
 
 com/sun/jna/darwin/libjnidispatch.jnilib;
-osname=macosx;processor=x86;processor=x86-64;processor=ppc
+osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
 "/>
           </manifest>
           <manifest file="@{target}" mode="update" if:true="@{module-info}">
@@ -884,6 +883,10 @@ osname=macosx;processor=x86;processor=x86-64;processor=ppc
     <condition property="ARCH" value="aarch64">
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
+    <!-- fixme probably should be mac only-->
+    <condition property="ARCH" value="x86-64">
+      <matches string="${os.prefix}" pattern="-x86-64$"/>
+    </condition>
     <condition property="ARCH" value="x86">
       <equals arg1="${os.prefix}" arg2="android-x86"/>
     </condition>
@@ -919,7 +922,14 @@ osname=macosx;processor=x86;processor=x86-64;processor=ppc
     </condition>
     <property name="xcode" value="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform"/>
     <condition property="make.SDKROOT"
-	       value="SDKROOT=${xcode}/Developer/SDKs/MacOSX10.11.sdk">
+         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX11.0.sdk">
+      <and>
+        <matches string="${os.prefix}" pattern="^darwin"/>
+        <available file="${xcode}/Developer/SDKs/MacOSX11.0.sdk"/>
+      </and>
+    </condition>
+    <condition property="make.SDKROOT"
+         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX10.11.sdk">
       <and>
         <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
         <available file="${xcode}/Developer/SDKs/MacOSX10.11.sdk"/>
@@ -1054,6 +1064,39 @@ cd ..
     </zip>
   </target>
 
+
+  <macrodef name="darwin-lipo">
+    <sequential>
+      <move file="${build.native}/libjnidispatch.jnilib" tofile="${build.native}/libjnidispatch_thin.jnilib"/>
+      <unzip src="./dist/darwin.jar" dest="${build.native}">
+        <patternset>
+          <include name="libjnidispatch.jnilib"/>
+        </patternset>
+      </unzip>
+      <!-- fixme: our ARCH is aarch64 on arm, but needs to be arm64. we could use a conditional, or use lipo -archs on the thin lib--> 
+      <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch">
+        <arg value="-archs"/>
+        <arg value="libjnidispatch_thin.jnilib"/>
+      </exec>
+
+      <exec executable="lipo" dir="${build.native}" failonerror="false">
+        <arg value="-remove"/>
+        <arg value="${lipo-arch}"/>
+        <arg value="libjnidispatch.jnilib"/>
+        <arg value="-output"/>
+        <arg value="libjnidispatch.jnilib"/>
+      </exec>
+
+      <exec executable="lipo" dir="${build.native}" failonerror="true">
+        <arg value="-create"/>
+        <arg value="libjnidispatch.jnilib"/>
+        <arg value="libjnidispatch_thin.jnilib"/>
+        <arg value="-output"/>
+        <arg value="libjnidispatch.jnilib"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
   <target name="native" depends="-enable-native,javah,-native-api-check,-prepare-native" unless="-native"
           description="Build native libraries.  Use 'ant -DCC=xxx' to build using a compiler other than gcc">
     <exec executable="${make}" dir="${native}" failonerror="true">
@@ -1084,9 +1127,11 @@ cd ..
       <fileset dir="${build.native}"
                includes="jnidispatch.dll,libjnidispatch.*"/>
     </copy>
+    <darwin-lipo/>
     <!-- For web start, native libraries may be provided in the root of -->
     <!-- an included jar file -->
-    <jar jarfile="${build}/${native.jar}" createUnicodeExtraFields="never" encoding="UTF-8">
+    <!-- fixme should be ${native.jar} -->
+    <jar jarfile="${build}/darwin.jar" createUnicodeExtraFields="never" encoding="UTF-8">
       <fileset dir="${build.native}" includes="jnidispatch.dll,libjnidispatch.*"/>
       <manifest>
         <attribute name="Implementation-Version" value="${jni.version} b${jni.build}"/>
