@@ -315,7 +315,12 @@
     <condition property="ld.preload.name" value="LD_PRELOAD" else="IGNORE">
       <not><equals arg1="${libjsig}" arg2=""/></not>
     </condition>
-    <property name="native.jar" value="${os.prefix}.jar"/>
+    <condition property="native.jar" value="${os.prefix}.jar">
+      <not><equals arg1="${build.os.family}" arg2="mac"/></not>
+    </condition>
+    <condition property="native.jar" value="darwin.jar">
+      <equals arg1="${build.os.family}" arg2="mac"/>
+    </condition>
     <property name="build.native" location="${build}/${native.subdir}"/>
     <property name="build.headers" location="${build}/headers"/>
     <property name="build.aar" location="${build}/aar"/>
@@ -1130,8 +1135,7 @@ cd ..
     <darwin-lipo/>
     <!-- For web start, native libraries may be provided in the root of -->
     <!-- an included jar file -->
-    <!-- fixme should be ${native.jar} -->
-    <jar jarfile="${build}/darwin.jar" createUnicodeExtraFields="never" encoding="UTF-8">
+    <jar jarfile="${build}/${native.jar}" createUnicodeExtraFields="never" encoding="UTF-8">
       <fileset dir="${build.native}" includes="jnidispatch.dll,libjnidispatch.*"/>
       <manifest>
         <attribute name="Implementation-Version" value="${jni.version} b${jni.build}"/>
