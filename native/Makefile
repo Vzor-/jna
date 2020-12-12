@@ -59,8 +59,6 @@ BUILD=../build/native
 JAVAH=$(BUILD)
 INSTALLDIR=../build/$(OS)
 JNIDISPATCH_OBJS=$(BUILD)/dispatch.o $(BUILD)/callback.o $(EXTRAOBJS)
-JNIDISPATCH=$(BUILD)/dispatch.o
-JNICALLBACK=$(BUILD)/callback.o
 RSRC=$(BUILD)/rsrc.o
 DLLCB=$(BUILD)/dll-callback.o
 ifneq ($(DYNAMIC_LIBFFI),true)
