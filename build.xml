@@ -889,7 +889,7 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
     <!-- fixme probably should be mac only-->
-    <condition property="ARCH" value="x86-64">
+    <condition property="ARCH" value="x86_64">
       <matches string="${os.prefix}" pattern="-x86_64$"/>
     </condition>
     <condition property="ARCH" value="x86">
