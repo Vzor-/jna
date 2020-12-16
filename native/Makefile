@@ -491,11 +491,12 @@ ifneq ($(DYNAMIC_LIBFFI),true)
 $(FFI_LIB): 
 	@mkdir -p $(FFI_BUILD)
 	@if [ ! -f $(FFI_SRC)/configure ]; then \
-	  echo "Generating configure"; \
+	  echo "Generating configure --> $(FFI_SRC); /bin/sh autogen.sh"; \
 	  (cd $(FFI_SRC); /bin/sh autogen.sh); \
 	fi
 	@if [ ! -f $(FFI_BUILD)/Makefile ]; then \
-	  echo "Configuring libffi ($(ARCH))"; \
+	  echo "Configuring libffi ($(ARCH)) --> $(FFI_BUILD) \
+      && $(FFI_ENV) $(FFI_SRC)/configure $(FFI_CONFIG) $(HOST_CONFIG))"; \
 	  (cd $(FFI_BUILD) \
 	    && $(FFI_ENV) $(FFI_SRC)/configure $(FFI_CONFIG) $(HOST_CONFIG)); \
 	fi
