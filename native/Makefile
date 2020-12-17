@@ -443,7 +443,7 @@ endif
 # separate builds, then merge the results.
 $(BUILD)/%.o : %.c dispatch.h protect.h $(FFI_LIB)
 	@mkdir -p $(BUILD)
-	$(CC) $(LOC_CC_OPTS) -arch $(DARWIN_ARCH) $(CFLAGS) -c $< -o $@
+	$(CC) $(LOC_CC_OPTS) -arch x86_64 $(CFLAGS) -c $< -o $@
 
 all: $(LIBRARY) $(TESTLIB) $(TESTLIB2) $(TESTLIB_JAR) $(TESTLIB_PATH) $(TESTLIB_TRUNC)
 
