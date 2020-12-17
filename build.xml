@@ -926,6 +926,14 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
       <isset property="SDKROOT"/>
     </condition>
     <property name="xcode" value="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform"/>
+    <!--fixme why are these here-->
+    <condition property="make.SDKROOT"
+         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX11.1.sdk">
+      <and>
+        <matches string="${os.prefix}" pattern="^darwin"/>
+        <available file="${xcode}/Developer/SDKs/MacOSX11.1.sdk"/>
+      </and>
+    </condition>
     <condition property="make.SDKROOT"
          value="SDKROOT=${xcode}/Developer/SDKs/MacOSX11.0.sdk">
       <and>
