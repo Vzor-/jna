@@ -925,6 +925,7 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <condition property="make.SDKROOT" value="SDKROOT=${SDKROOT}">
       <isset property="SDKROOT"/>
     </condition>
+    <!-- SDKs/MacOSX.sdk contains the most recent SDK version fixme: find apple doc confirming this -->
     <property name="make.SDKROOT" value="SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"/>
     <!-- Windows' drive letters and spaces in absolute paths wreak havoc on
          make -->
@@ -1022,6 +1023,7 @@ cd ..
 
 
   <macrodef name="darwin-lipo">
+      <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
     <sequential>
       <move file="${build.native}/libjnidispatch.jnilib" tofile="${build.native}/libjnidispatch_thin.jnilib" overwrite="false"/>
       <unzip src="./dist/darwin.jar" dest="${build.native}">
@@ -1029,12 +1031,12 @@ cd ..
           <include name="libjnidispatch.jnilib"/>
         </patternset>
       </unzip>
-      <!-- fixme: our ARCH is aarch64 on arm, but needs to be arm64. we could use a conditional, or use lipo -archs on the thin lib--> 
+      <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 this will return arm64 -->
       <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch">
         <arg value="-archs"/>
         <arg value="libjnidispatch_thin.jnilib"/>
       </exec>
-
+      <!-- Remove the existing lib form the target arch, do not fail if the arch has no associated lib -->
       <exec executable="lipo" dir="${build.native}" failonerror="false">
         <arg value="-remove"/>
         <arg value="${lipo-arch}"/>
