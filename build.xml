@@ -890,7 +890,7 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     </condition>
     <!-- fixme probably should be mac only-->
     <condition property="ARCH" value="x86_64">
-      <matches string="${os.prefix}" pattern="-x86_64$"/>
+      <matches string="${os.prefix}" pattern="darwin-x86_64$"/>
     </condition>
     <condition property="ARCH" value="x86">
       <equals arg1="${os.prefix}" arg2="android-x86"/>
@@ -925,64 +925,7 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <condition property="make.SDKROOT" value="SDKROOT=${SDKROOT}">
       <isset property="SDKROOT"/>
     </condition>
-    <property name="xcode" value="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform"/>
-    <!--fixme why are these here-->
-    <condition property="make.SDKROOT"
-         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX11.1.sdk">
-      <and>
-        <matches string="${os.prefix}" pattern="^darwin"/>
-        <available file="${xcode}/Developer/SDKs/MacOSX11.1.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX11.0.sdk">
-      <and>
-        <matches string="${os.prefix}" pattern="^darwin"/>
-        <available file="${xcode}/Developer/SDKs/MacOSX11.0.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-         value="SDKROOT=${xcode}/Developer/SDKs/MacOSX10.11.sdk">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="${xcode}/Developer/SDKs/MacOSX10.11.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-	       value="SDKROOT=${xcode}/Developer/SDKs/MacOSX10.9.sdk">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="${xcode}/Developer/SDKs/MacOSX10.9.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-	       value="SDKROOT=${xcode}/Developer/SDKs/MacOSX10.8.sdk">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="${xcode}/Developer/SDKs/MacOSX10.8.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-	       value="SDKROOT=/Developer/SDKs/MacOSX10.6.sdk">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="/Developer/SDKs/MacOSX10.6.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-	       value="SDKROOT=/Developer/SDKs/MacOSX10.5.sdk">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="/Developer/SDKs/MacOSX10.5.sdk"/>
-      </and>
-    </condition>
-    <condition property="make.SDKROOT"
-	       value="SDKROOT=/Developer/SDKs/MacOSX10.4u.sdk" else="IGNORE=">
-      <and>
-        <equals arg1="${os.prefix}" arg2="darwin" trim="true"/>
-        <available file="/Developer/SDKs/MacOSX10.4u.sdk"/>
-      </and>
-    </condition>
+    <property name="make.SDKROOT" value="SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"/>
     <!-- Windows' drive letters and spaces in absolute paths wreak havoc on
          make -->
     <condition property="make.BUILD" value="BUILD=../${build}/${native.subdir}" else="BUILD=${build.native}">
@@ -1080,7 +1023,7 @@ cd ..
 
   <macrodef name="darwin-lipo">
     <sequential>
-      <move file="${build.native}/libjnidispatch.jnilib" tofile="${build.native}/libjnidispatch_thin.jnilib"/>
+      <move file="${build.native}/libjnidispatch.jnilib" tofile="${build.native}/libjnidispatch_thin.jnilib" overwrite="false"/>
       <unzip src="./dist/darwin.jar" dest="${build.native}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
