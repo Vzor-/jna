@@ -11,7 +11,7 @@
 #
 #   Windows (x86/amd64/aarch64)
 #   Windows CE/Mobile (arm)
-#   Darwin/OS X (i386/x86_64/ppc)
+#   Darwin/OS X (i386/x86-64/ppc)
 #   Linux (i386/amd64/ppc/arm)
 #   Solaris (i386/amd64/sparc/sparcv9)
 #   AIX (ppc/ppc64)
@@ -395,6 +395,10 @@ ifeq ($(OS),darwin)
 DARWIN_ARCH=$(ARCH)
 ifeq ($(ARCH),aarch64)
   DARWIN_ARCH=arm64
+else 
+ifeq ($(ARCH),x86-64)
+  DARWIN_ARCH=x86_64
+endif
 endif
 
 XCODE_VERSION=$(shell xcodebuild -version | grep Xcode | sed 's/^Xcode \([1-9][0-9]*\).*/\1/g')
@@ -415,11 +419,7 @@ JNISFX=_thin.jnilib
 ifneq ($(SDKROOT),)
 SYSLIBROOT=-Wl,-syslibroot,$(SDKROOT)
 ISYSROOT=-isysroot $(SDKROOT)
-#todo is this right?
-# ARCHFLAGS=-arch x86_64
-#fixme
 ARCHFLAGS+=-arch $(DARWIN_ARCH)
-# ALT_ARCHS+=arm64
 endif
 
 PCFLAGS+=$(ISYSROOT) -x objective-c

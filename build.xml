@@ -889,8 +889,8 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
     <!-- fixme probably should be mac only-->
-    <condition property="ARCH" value="x86_64">
-      <matches string="${os.prefix}" pattern="darwin-x86_64$"/>
+    <condition property="ARCH" value="x86-64">
+      <matches string="${os.prefix}" pattern="darwin-x86-64$"/>
     </condition>
     <condition property="ARCH" value="x86">
       <equals arg1="${os.prefix}" arg2="android-x86"/>
