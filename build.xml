@@ -1023,10 +1023,9 @@ cd ..
 
 
   <macrodef name="darwin-lipo">
-      <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
+    <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
     <sequential>
-      <move file="${build.native}/libjnidispatch.jnilib" tofile="${build.native}/libjnidispatch_thin.jnilib" overwrite="false"/>
-      <unzip src="./dist/darwin.jar" dest="${build.native}">
+      <unzip src="${dist}/darwin.jar" dest="${build.native}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
         </patternset>
@@ -1074,6 +1073,7 @@ cd ..
       <arg value="JNA_JNI_VERSION=${jni.version}"/>
       <arg value="CHECKSUM=${jni.md5}"/>
     </exec>
+    <darwin-lipo/>
     <mkdir dir="${classes}/${native.path}"/>
     <copy todir="${classes}/${native.path}">
       <fileset dir="${build.native}"
@@ -1085,7 +1085,6 @@ cd ..
       <fileset dir="${build.native}"
                includes="jnidispatch.dll,libjnidispatch.*"/>
     </copy>
-    <darwin-lipo/>
     <!-- For web start, native libraries may be provided in the root of -->
     <!-- an included jar file -->
     <jar jarfile="${build}/${native.jar}" createUnicodeExtraFields="never" encoding="UTF-8">

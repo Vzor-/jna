@@ -411,7 +411,7 @@ NO_COMPACT_UNWIND=-Wl,-no_compact_unwind
 endif
 endif
 LIBSFX=.dylib
-JNISFX=.jnilib
+JNISFX=_thin.jnilib
 ifneq ($(SDKROOT),)
 SYSLIBROOT=-Wl,-syslibroot,$(SDKROOT)
 ISYSROOT=-isysroot $(SDKROOT)
@@ -443,7 +443,6 @@ endif
 # separate builds, then merge the results.
 $(BUILD)/%.o : %.c dispatch.h protect.h $(FFI_LIB)
 	@mkdir -p $(BUILD)
-	$(info ************ $(SDKROOT) ************)
 ifneq ($(SDKROOT),)
 	$(CC) $(LOC_CC_OPTS) -arch $(DARWIN_ARCH) $(CFLAGS) -c $< -o $@
 else
@@ -492,12 +491,11 @@ ifneq ($(DYNAMIC_LIBFFI),true)
 $(FFI_LIB): 
 	@mkdir -p $(FFI_BUILD)
 	@if [ ! -f $(FFI_SRC)/configure ]; then \
-	  echo "Generating configure --> $(FFI_SRC); /bin/sh autogen.sh"; \
+	  echo "Generating configure"; \
 	  (cd $(FFI_SRC); /bin/sh autogen.sh); \
 	fi
 	@if [ ! -f $(FFI_BUILD)/Makefile ]; then \
-	  echo "Configuring libffi ($(ARCH)) --> $(FFI_BUILD) \
-      && $(FFI_ENV) $(FFI_SRC)/configure $(FFI_CONFIG) $(HOST_CONFIG))"; \
+	  echo "Configuring libffi"; \
 	  (cd $(FFI_BUILD) \
 	    && $(FFI_ENV) $(FFI_SRC)/configure $(FFI_CONFIG) $(HOST_CONFIG)); \
 	fi
