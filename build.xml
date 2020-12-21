@@ -1073,7 +1073,7 @@ cd ..
       <arg value="JNA_JNI_VERSION=${jni.version}"/>
       <arg value="CHECKSUM=${jni.md5}"/>
     </exec>
-    <darwin-lipo/>
+    <darwin-lipo if:set="make.SDKROOT"/>
     <mkdir dir="${classes}/${native.path}"/>
     <copy todir="${classes}/${native.path}">
       <fileset dir="${build.native}"

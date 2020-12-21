@@ -402,6 +402,7 @@ endif
 endif
 
 XCODE_VERSION=$(shell xcodebuild -version | grep Xcode | sed 's/^Xcode \([1-9][0-9]*\).*/\1/g')
+# fixme remove this?
 JAVA_INCLUDES+=-I/System/Library/Frameworks/JavaVM.framework/Headers
 DEFAULT_ARCH=$(shell arch)
 HOST_CONFIG=--host $(DARWIN_ARCH)-apple-darwin
@@ -425,6 +426,7 @@ endif
 PCFLAGS+=$(ISYSROOT) -x objective-c
 # JAWT no longer supported on OSX
 CDEFINES+=-DTARGET_RT_MAC_CFM=0 -DFFI_MMAP_EXEC_WRIT -DNO_JAWT
+# JavaVM.framwork is "Deprecated in OS X v10.7."
 # fixme conditional -framework JavaVM, was "-LDFLAGS=$(ARCHFLAGS) -dynamiclib -o $@ -framework JavaVM \"
 LDFLAGS=$(ARCHFLAGS) -dynamiclib -o $@ \
   -compatibility_version $(shell echo ${JNA_JNI_VERSION}|sed 's/^\([0-9][0-9]*\).*/\1/g') \
@@ -495,7 +497,7 @@ $(FFI_LIB):
 	  (cd $(FFI_SRC); /bin/sh autogen.sh); \
 	fi
 	@if [ ! -f $(FFI_BUILD)/Makefile ]; then \
-	  echo "Configuring libffi"; \
+	  echo "Configuring libffi ($(ARCH))"; \
 	  (cd $(FFI_BUILD) \
 	    && $(FFI_ENV) $(FFI_SRC)/configure $(FFI_CONFIG) $(HOST_CONFIG)); \
 	fi
