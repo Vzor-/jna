@@ -276,7 +276,7 @@
     <condition property="os.prefix" value="win32-${jre.arch}">
       <equals arg1="${build.os.family}" arg2="windows"/>
     </condition>
-    <condition property="os.prefix" value="darwin">
+    <condition property="os.prefix" value="darwin-${jre.arch}">
       <equals arg1="${build.os.family}" arg2="mac"/>
     </condition>
     <condition property="os.prefix" value="sunos-${jre.arch}">
@@ -1033,7 +1033,7 @@ cd ..
       <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 this will return arm64 -->
       <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch">
         <arg value="-archs"/>
-        <arg value="libjnidispatch_thin.jnilib"/>
+        <arg value="libjnidispatch-${ARCH}.jnilib"/>
       </exec>
       <!-- Remove the existing lib from the target arch, do not fail if the arch has no associated lib -->
       <exec executable="lipo" dir="${build.native}" failonerror="false">
@@ -1047,7 +1047,7 @@ cd ..
       <exec executable="lipo" dir="${build.native}" failonerror="true">
         <arg value="-create"/>
         <arg value="libjnidispatch.jnilib"/>
-        <arg value="libjnidispatch_thin.jnilib"/>
+        <arg value="libjnidispatch-${ARCH}.jnilib"/>
         <arg value="-output"/>
         <arg value="libjnidispatch.jnilib"/>
       </exec>

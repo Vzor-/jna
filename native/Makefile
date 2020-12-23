@@ -418,7 +418,7 @@ NO_COMPACT_UNWIND=-Wl,-no_compact_unwind
 endif
 endif
 LIBSFX=.dylib
-JNISFX=_thin.jnilib
+JNISFX=-$(ARCH).jnilib
 ifneq ($(SDKROOT),)
 SYSLIBROOT=-Wl,-syslibroot,$(SDKROOT)
 ISYSROOT=-isysroot $(SDKROOT)
