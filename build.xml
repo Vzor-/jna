@@ -1025,7 +1025,7 @@ cd ..
   <macrodef name="darwin-lipo">
     <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
     <sequential>
-      <unzip src="${dist}/darwin.jar" dest="${build.native}">
+      <unzip src="${dist}/${native.jar}" dest="${build.native}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
         </patternset>
@@ -1035,7 +1035,7 @@ cd ..
         <arg value="-archs"/>
         <arg value="libjnidispatch_thin.jnilib"/>
       </exec>
-      <!-- Remove the existing lib form the target arch, do not fail if the arch has no associated lib -->
+      <!-- Remove the existing lib from the target arch, do not fail if the arch has no associated lib -->
       <exec executable="lipo" dir="${build.native}" failonerror="false">
         <arg value="-remove"/>
         <arg value="${lipo-arch}"/>

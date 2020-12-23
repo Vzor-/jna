@@ -402,6 +402,8 @@ endif
 endif
 
 XCODE_VERSION=$(shell xcodebuild -version | grep Xcode | sed 's/^Xcode \([1-9][0-9]*\).*/\1/g')
+MACOS_VERSION_MAJOR=$(shell sw_vers -productVersion | cut -d. -f 1)
+MACOS_VERSION_MINOR=$(shell sw_vers -productVersion | cut -d. -f 2)
 # fixme remove this?
 JAVA_INCLUDES+=-I/System/Library/Frameworks/JavaVM.framework/Headers
 DEFAULT_ARCH=$(shell arch)
@@ -426,9 +428,16 @@ endif
 PCFLAGS+=$(ISYSROOT) -x objective-c
 # JAWT no longer supported on OSX
 CDEFINES+=-DTARGET_RT_MAC_CFM=0 -DFFI_MMAP_EXEC_WRIT -DNO_JAWT
+
+# MAJOR < 10 || (MAJOR = 10 && MINOR < 7)
+MACOS_LT_10_7 = $(shell [ ${MACOS_VERSION_MAJOR} -lt 10 -o ${MACOS_VERSION_MAJOR} -eq 10 -a ${MACOS_VERSION_MINOR} -lt 7 ] && echo true)
+
 # JavaVM.framwork is "Deprecated in OS X v10.7."
-# fixme conditional -framework JavaVM, was "-LDFLAGS=$(ARCHFLAGS) -dynamiclib -o $@ -framework JavaVM \"
-LDFLAGS=$(ARCHFLAGS) -dynamiclib -o $@ \
+ifeq ($(MACOS_LT_10_7),true)
+FRAMEWORK=-framework JavaVM
+endif
+
+LDFLAGS=$(ARCHFLAGS) -dynamiclib -o $@ $(FRAMEWORK) \
   -compatibility_version $(shell echo ${JNA_JNI_VERSION}|sed 's/^\([0-9][0-9]*\).*/\1/g') \
   -current_version $(JNA_JNI_VERSION) \
   -mmacosx-version-min=10.3 \
