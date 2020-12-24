@@ -1027,7 +1027,6 @@ cd ..
       <available file="${dist}/${native.jar}" property="dist-available"/>
       <!-- If no dist file exists, there is no need for lipo. Rename the lib and exit. -->
       <move file="${build.native}/libjnidispatch-${ARCH}.jnilib" tofile="${build.native}/libjnidispatch.jnilib" unless:true="${dist-available}"/>
-
       <unzip src="${dist}/${native.jar}" dest="${build.native}" if:true="${dist-available}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
@@ -1041,7 +1040,7 @@ cd ..
       <!-- Remove the existing lib from the target arch, do not fail if the arch has no associated lib -->
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
-        <arg value="${lipo-arch}"/>
+        <arg line="${lipo-arch}"/> <!-- 'line' cleans up trailing whitespace that older versions of lipo include -->
         <arg value="libjnidispatch.jnilib"/>
         <arg value="-output"/>
         <arg value="libjnidispatch.jnilib"/>
