@@ -1020,23 +1020,24 @@ cd ..
     </zip>
   </target>
 
+  <!-- 
+    Darwin prefers fat libraries. native/Makefile outputs a binary file for one architecture. The binary is joined into a preexisting library pulled from dist/darwin.jar using lipo. 
 
+    If the preexisting library does not exist, or the library is thin and only supports the target arch, the output binary will be renamed and used in leu of joining a fat lib 
+  -->
   <macrodef name="darwin-lipo">
-    <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
     <sequential>
-      <!-- If no dist file exists, there is no need for lipo. Skip lipo and rename the lib-->
       <available file="${dist}/${native.jar}" property="dist-available"/>
       <unzip src="${dist}/${native.jar}" dest="${build.native}" if:true="${dist-available}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
         </patternset>
       </unzip>
-      <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 this will return arm64 -->
+      <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 lipo will return arm64 -->
       <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch" if:true="${dist-available}">
         <arg value="-archs"/>
         <arg value="libjnidispatch-${ARCH}.jnilib"/>
       </exec>
-      <!-- Remove the existing lib from the target arch, do not fail if the arch has no associated lib -->
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
         <arg line="${lipo-arch}"/> <!-- 'line' cleans up trailing whitespace that older versions of lipo include -->
@@ -1044,7 +1045,6 @@ cd ..
         <arg value="-output"/>
         <arg value="libjnidispatch.jnilib"/>
       </exec>
-      <!-- lipo create can fail if the dist lib is thin and of the same arch that was built -->
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}" resultproperty="lipo-result">
         <arg value="-create"/>
         <arg value="libjnidispatch.jnilib"/>
