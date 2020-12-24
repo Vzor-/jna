@@ -1024,18 +1024,22 @@ cd ..
   <macrodef name="darwin-lipo">
     <!-- native/Makefile builds only one arch, the output must be joined into the existing fat library--> 
     <sequential>
-      <unzip src="${dist}/${native.jar}" dest="${build.native}">
+      <available file="${dist}/${native.jar}" property="dist-available"/>
+      <!-- If no dist file exists, there is no need for lipo. Rename the lib and exit. -->
+      <move file="${build.native}/libjnidispatch-${ARCH}.jnilib" tofile="${build.native}/libjnidispatch.jnilib" unless:true="${dist-available}"/>
+
+      <unzip src="${dist}/${native.jar}" dest="${build.native}" if:true="${dist-available}">
         <patternset>
           <include name="libjnidispatch.jnilib"/>
         </patternset>
       </unzip>
       <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 this will return arm64 -->
-      <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch">
+      <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch" if:true="${dist-available}">
         <arg value="-archs"/>
         <arg value="libjnidispatch-${ARCH}.jnilib"/>
       </exec>
       <!-- Remove the existing lib from the target arch, do not fail if the arch has no associated lib -->
-      <exec executable="lipo" dir="${build.native}" failonerror="false">
+      <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
         <arg value="${lipo-arch}"/>
         <arg value="libjnidispatch.jnilib"/>
@@ -1043,7 +1047,7 @@ cd ..
         <arg value="libjnidispatch.jnilib"/>
       </exec>
 
-      <exec executable="lipo" dir="${build.native}" failonerror="true">
+      <exec executable="lipo" dir="${build.native}" failonerror="true" if:true="${dist-available}">
         <arg value="-create"/>
         <arg value="libjnidispatch.jnilib"/>
         <arg value="libjnidispatch-${ARCH}.jnilib"/>
