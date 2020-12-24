@@ -888,18 +888,14 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <condition property="ARCH" value="aarch64">
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
-    <!-- fixme probably should be mac only-->
     <condition property="ARCH" value="x86-64">
-      <matches string="${os.prefix}" pattern="darwin-x86-64$"/>
+      <matches string="${os.prefix}" pattern="x86-64$"/>
     </condition>
     <condition property="ARCH" value="i386">
-      <matches string="${os.prefix}" pattern="darwin-i386$"/>
+      <equals arg1="${os.prefix}" arg2="darwin-i386"/>
     </condition>
     <condition property="ARCH" value="x86">
       <equals arg1="${os.prefix}" arg2="android-x86"/>
-    </condition>
-    <condition property="ARCH" value="x86-64">
-      <equals arg1="${os.prefix}" arg2="android-x86-64"/>
     </condition>
     <condition property="ARCH" value="mips">
       <equals arg1="${os.prefix}" arg2="android-mips"/>

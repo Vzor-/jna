@@ -404,21 +404,21 @@ endif
 XCODE_VERSION=$(shell xcodebuild -version | grep Xcode | sed 's/^Xcode \([1-9][0-9]*\).*/\1/g')
 MACOS_VERSION_MAJOR=$(shell sw_vers -productVersion | cut -d. -f 1)
 MACOS_VERSION_MINOR=$(shell sw_vers -productVersion | cut -d. -f 2)
-# fixme remove this?
 JAVA_INCLUDES+=-I/System/Library/Frameworks/JavaVM.framework/Headers
 DEFAULT_ARCH=$(shell arch)
 HOST_CONFIG=--host $(DARWIN_ARCH)-apple-darwin
 FFI_ENV += CC="$(CC)" CFLAGS="-arch $(DARWIN_ARCH) $(ISYSROOT) $(COPT) $(CDEBUG)" CPPFLAGS="$(CDEFINES)" LD="$(LD) -arch $(DARWIN_ARCH)"
+LIBSFX=.dylib
+JNISFX=-$(ARCH).jnilib
+# JAWT no longer supported on OSX
+CDEFINES+=-DTARGET_RT_MAC_CFM=0 -DFFI_MMAP_EXEC_WRIT -DNO_JAWT
 
-#todo cleanup
 ifneq ($(ARCH),ppc)
 ifneq ($(XCODE_VERSION),3)
 # Xcode 4+ options
 NO_COMPACT_UNWIND=-Wl,-no_compact_unwind
 endif
 endif
-LIBSFX=.dylib
-JNISFX=-$(ARCH).jnilib
 ifneq ($(SDKROOT),)
 SYSLIBROOT=-Wl,-syslibroot,$(SDKROOT)
 ISYSROOT=-isysroot $(SDKROOT)
@@ -426,8 +426,6 @@ ARCHFLAGS+=-arch $(DARWIN_ARCH)
 endif
 
 PCFLAGS+=$(ISYSROOT) -x objective-c
-# JAWT no longer supported on OSX
-CDEFINES+=-DTARGET_RT_MAC_CFM=0 -DFFI_MMAP_EXEC_WRIT -DNO_JAWT
 
 # MAJOR < 10 || (MAJOR = 10 && MINOR < 7)
 MACOS_LT_10_7 = $(shell [ ${MACOS_VERSION_MAJOR} -lt 10 -o ${MACOS_VERSION_MAJOR} -eq 10 -a ${MACOS_VERSION_MINOR} -lt 7 ] && echo true)
