@@ -315,12 +315,10 @@
     <condition property="ld.preload.name" value="LD_PRELOAD" else="IGNORE">
       <not><equals arg1="${libjsig}" arg2=""/></not>
     </condition>
-    <condition property="native.jar" value="${os.prefix}.jar">
-      <not><equals arg1="${build.os.family}" arg2="mac"/></not>
-    </condition>
     <condition property="native.jar" value="darwin.jar">
       <equals arg1="${build.os.family}" arg2="mac"/>
     </condition>
+    <property name="native.jar" value="${os.prefix}.jar"/>
     <property name="build.native" location="${build}/${native.subdir}"/>
     <property name="build.headers" location="${build}/headers"/>
     <property name="build.aar" location="${build}/aar"/>
@@ -1034,13 +1032,25 @@ cd ..
         </patternset>
       </unzip>
       <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 lipo will return arm64 -->
-      <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-arch" if:true="${dist-available}">
-        <arg value="-archs"/>
+      <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-info" if:true="${dist-available}">
+        <arg value="-info"/>
         <arg value="libjnidispatch-${ARCH}.jnilib"/>
       </exec>
+      <regexp id="lipo-regex" pattern="\b(\w+)$"/>
+
+      <loadresource property="lipo-arch">
+          <propertyresource name="lipo-info"/>
+          <filterchain>
+              <tokenfilter>
+                  <filetokenizer/>
+                  <replaceregex pattern=".*\s" replace=""/>
+              </tokenfilter>
+          </filterchain>
+      </loadresource> 
+
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
-        <arg line="${lipo-arch}"/> <!-- 'line' cleans up trailing whitespace that older versions of lipo include -->
+        <arg value="${lipo-arch}"/>
         <arg value="libjnidispatch.jnilib"/>
         <arg value="-output"/>
         <arg value="libjnidispatch.jnilib"/>
