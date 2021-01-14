@@ -398,6 +398,11 @@ ifeq ($(ARCH),aarch64)
 else 
 ifeq ($(ARCH),x86-64)
   DARWIN_ARCH=x86_64
+else
+ifeq ($(ARCH),x86)
+  DARWIN_ARCH=x86
+else 
+endif
 endif
 endif
 

@@ -874,15 +874,6 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     </condition>
     <property name="make.OS" value="IGNORE="/>
     <!-- Ensure Makefile ARCH property properly set -->
-    <condition property="ARCH" value="arm">
-      <equals arg1="${os.prefix}" arg2="w32ce-arm"/>
-    </condition>
-    <condition property="ARCH" value="arm">
-      <equals arg1="${os.prefix}" arg2="android-arm"/>
-    </condition>
-    <condition property="ARCH" value="armv7">
-      <equals arg1="${os.prefix}" arg2="android-armv7"/>
-    </condition>
     <condition property="ARCH" value="aarch64">
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
@@ -895,11 +886,17 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <condition property="ARCH" value="ppc64">
       <matches string="${os.prefix}" pattern="-ppc64$"/>
     </condition>
-    <condition property="ARCH" value="i386">
-      <equals arg1="${os.prefix}" arg2="darwin-i386"/>
-    </condition>
     <condition property="ARCH" value="x86">
-      <equals arg1="${os.prefix}" arg2="android-x86"/>
+      <matches string="${os.prefix}" pattern="-x86$"/>
+    </condition>
+    <condition property="ARCH" value="arm">
+      <equals arg1="${os.prefix}" arg2="w32ce-arm"/>
+    </condition>
+    <condition property="ARCH" value="arm">
+      <equals arg1="${os.prefix}" arg2="android-arm"/>
+    </condition>
+    <condition property="ARCH" value="armv7">
+      <equals arg1="${os.prefix}" arg2="android-armv7"/>
     </condition>
     <condition property="ARCH" value="mips">
       <equals arg1="${os.prefix}" arg2="android-mips"/>
@@ -1048,11 +1045,11 @@ cd ..
   <!-- 
     Darwin prefers fat libraries. native/Makefile outputs a binary file for
     one architecture. The binary is joined into a preexisting library pulled
-    from dist/darwin.jar using lipo. 
+    from dist/darwin.jar using lipo.
 
-    If the preexisting library does not exist, or the library is thin and 
-    only supports the target arch, the output binary will be renamed and 
-    used in leu of joining a fat lib 
+    If the preexisting library does not exist, or the library is thin and
+    only supports the target arch, the output binary will be renamed and
+    used in leu of joining a fat lib
   -->
   <macrodef name="darwin-lipo">
     <sequential>
