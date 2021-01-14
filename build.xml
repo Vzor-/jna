@@ -316,7 +316,7 @@
       <not><equals arg1="${libjsig}" arg2=""/></not>
     </condition>
     <condition property="native.jar" value="darwin.jar">
-      <equals arg1="${build.os.family}" arg2="mac"/>
+      <matches string="${os.prefix}" pattern="^darwin-"/>
     </condition>
     <property name="native.jar" value="${os.prefix}.jar"/>
     <property name="build.native" location="${build}/${native.subdir}"/>
@@ -925,24 +925,27 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <!-- SDKs/MacOSX.sdk contains the most recent SDK version, this feature started in OSX version 10.8 -->
     <condition property="make.SDKROOT" value="SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk">
       <and>
-        <equals arg1="${build.os.family}" arg2="mac"/>
+        <matches string="${os.prefix}" pattern="^darwin-"/>
         <available file="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"/>
       </and>
     </condition>
-    <!-- If the unversioned Xcode folder is unavalible, locate the SDK. It will live in one of two places depending on the version of Xcode -->
+    <!-- however for older SDKs, it will be versioned and live in one of two locations:
+      - /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+      - /Developer/SDKs
+    -->
     <condition property="sdk-parent" value="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs">
       <and>
-        <equals arg1="${build.os.family}" arg2="mac"/>
+        <matches string="${os.prefix}" pattern="^darwin-"/>
         <available file="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs"/>
       </and>
     </condition>
     <condition property="sdk-parent" value="/Developer/SDKs">
       <and>
-        <equals arg1="${build.os.family}" arg2="mac"/>
+        <matches string="${os.prefix}" pattern="^darwin-"/>
         <available file="/Developer/SDKs"/>
       </and>
     </condition>
-    <!-- Find the most recent SDK by version number, Sort -V is unsupported on Snow Leopard so -t -k -n is used instead --> 
+    <!-- Find the most recent SDK by version number, sort -V was not introduced until OSX version 10.12 -->
     <exec executable="sh" dir="${sdk-parent}" outputproperty="sdk-latest" unless:set="make.SDKROOT">
       <arg value="-c"/>
       <arg line="&quot;ls -d MacOSX10.*.sdk | sort -t &quot;.&quot; -k2 -n | tail -1&quot;"/>
@@ -1043,9 +1046,13 @@ cd ..
   </target>
 
   <!-- 
-    Darwin prefers fat libraries. native/Makefile outputs a binary file for one architecture. The binary is joined into a preexisting library pulled from dist/darwin.jar using lipo. 
+    Darwin prefers fat libraries. native/Makefile outputs a binary file for
+    one architecture. The binary is joined into a preexisting library pulled
+    from dist/darwin.jar using lipo. 
 
-    If the preexisting library does not exist, or the library is thin and only supports the target arch, the output binary will be renamed and used in leu of joining a fat lib 
+    If the preexisting library does not exist, or the library is thin and 
+    only supports the target arch, the output binary will be renamed and 
+    used in leu of joining a fat lib 
   -->
   <macrodef name="darwin-lipo">
     <sequential>
@@ -1055,13 +1062,15 @@ cd ..
           <include name="libjnidispatch.jnilib"/>
         </patternset>
       </unzip>
-      <!-- Detect the arch that was built. In the case of make.ARCH=aarch64 lipo will return arm64 -->
+      <!--
+        Detect the arch that was just built.
+        Note, lipo -info will not exactly match that provided by ${ARCH}, this is OK
+      -->
       <exec executable="lipo" dir="${build.native}" failonerror="true" outputproperty="lipo-info" if:true="${dist-available}">
         <arg value="-info"/>
         <arg value="libjnidispatch-${ARCH}.jnilib"/>
       </exec>
       <regexp id="lipo-regex" pattern="\b(\w+)$"/>
-
       <loadresource property="lipo-arch" if:true="${dist-available}">
           <propertyresource name="lipo-info"/>
           <filterchain>
@@ -1071,7 +1080,7 @@ cd ..
               </tokenfilter>
           </filterchain>
       </loadresource>
-
+      <!-- Use the detected arch to remove the old binary, and add the new binary to the fat library -->
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
         <arg value="${lipo-arch}"/>
