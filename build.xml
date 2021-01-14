@@ -887,7 +887,13 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
       <matches string="${os.prefix}" pattern="-aarch64$"/>
     </condition>
     <condition property="ARCH" value="x86-64">
-      <matches string="${os.prefix}" pattern="x86-64$"/>
+      <matches string="${os.prefix}" pattern="-x86-64$"/>
+    </condition>
+    <condition property="ARCH" value="ppc">
+      <matches string="${os.prefix}" pattern="-ppc$"/>
+    </condition>
+    <condition property="ARCH" value="ppc64">
+      <matches string="${os.prefix}" pattern="-ppc64$"/>
     </condition>
     <condition property="ARCH" value="i386">
       <equals arg1="${os.prefix}" arg2="darwin-i386"/>
@@ -900,12 +906,6 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     </condition>
     <condition property="ARCH" value="mips64">
       <equals arg1="${os.prefix}" arg2="android-mips64"/>
-    </condition>
-    <condition property="ARCH" value="ppc">
-      <equals arg1="${os.prefix}" arg2="aix-ppc"/>
-    </condition>
-    <condition property="ARCH" value="ppc64">
-      <equals arg1="${os.prefix}" arg2="aix-ppc64"/>
     </condition>
     <!-- ensure ARCH is set properly for 64-bit capable platforms -->
     <!-- use ANT_OPTS=-d64/-d32 to build 64-bit/32-bit if not the platform default -->
@@ -922,8 +922,32 @@ osname=macosx;processor=x86;processor=x86-64;processor=aarch64;processor=ppc
     <condition property="make.SDKROOT" value="SDKROOT=${SDKROOT}">
       <isset property="SDKROOT"/>
     </condition>
-    <!-- SDKs/MacOSX.sdk contains the most recent SDK version fixme: find apple doc confirming this -->
-    <property name="make.SDKROOT" value="SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"/>
+    <!-- SDKs/MacOSX.sdk contains the most recent SDK version, this feature started in OSX version 10.8 -->
+    <condition property="make.SDKROOT" value="SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk">
+      <and>
+        <equals arg1="${build.os.family}" arg2="mac"/>
+        <available file="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"/>
+      </and>
+    </condition>
+    <!-- If the unversioned Xcode folder is unavalible, locate the SDK. It will live in one of two places depending on the version of Xcode -->
+    <condition property="sdk-parent" value="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs">
+      <and>
+        <equals arg1="${build.os.family}" arg2="mac"/>
+        <available file="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs"/>
+      </and>
+    </condition>
+    <condition property="sdk-parent" value="/Developer/SDKs">
+      <and>
+        <equals arg1="${build.os.family}" arg2="mac"/>
+        <available file="/Developer/SDKs"/>
+      </and>
+    </condition>
+    <!-- Find the most recent SDK by version number, Sort -V is unsupported on Snow Leopard so -t -k -n is used instead --> 
+    <exec executable="sh" dir="${sdk-parent}" outputproperty="sdk-latest" unless:set="make.SDKROOT">
+      <arg value="-c"/>
+      <arg line="&quot;ls -d MacOSX10.*.sdk | sort -t &quot;.&quot; -k2 -n | tail -1&quot;"/>
+    </exec>
+    <property name="make.SDKROOT" value="SDKROOT=${sdk-parent}/${sdk-latest}"/>
     <!-- Windows' drive letters and spaces in absolute paths wreak havoc on
          make -->
     <condition property="make.BUILD" value="BUILD=../${build}/${native.subdir}" else="BUILD=${build.native}">
@@ -1038,7 +1062,7 @@ cd ..
       </exec>
       <regexp id="lipo-regex" pattern="\b(\w+)$"/>
 
-      <loadresource property="lipo-arch">
+      <loadresource property="lipo-arch" if:true="${dist-available}">
           <propertyresource name="lipo-info"/>
           <filterchain>
               <tokenfilter>
@@ -1046,7 +1070,7 @@ cd ..
                   <replaceregex pattern=".*\s" replace=""/>
               </tokenfilter>
           </filterchain>
-      </loadresource> 
+      </loadresource>
 
       <exec executable="lipo" dir="${build.native}" failonerror="false" if:true="${dist-available}">
         <arg value="-remove"/>
