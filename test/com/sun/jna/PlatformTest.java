@@ -46,10 +46,7 @@ public class PlatformTest extends TestCase {
                                                              "i386", "Darwin"));
         assertEquals("Wrong resource path Mac/x86_64", "darwin",
                      Platform.getNativeLibraryResourcePrefix(Platform.MAC,
-                                                             "x86_64", "Mac"));        
-        assertEquals("Wrong resource path Mac/aarch64", "darwin",
-                     Platform.getNativeLibraryResourcePrefix(Platform.MAC,
-                                                             "aarch64", "Mac"));
+                                                             "x86_64", "Mac"));
         assertEquals("Wrong resource path Solaris/sparc", "sunos-sparc",
                      Platform.getNativeLibraryResourcePrefix(Platform.SOLARIS,
                                                              "sparc", "Solaris"));
